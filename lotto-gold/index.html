@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>💛 금두꺼비 로또번호 추천 명당 💛</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro KR", sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; 
+            min-height: 100dvh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            touch-action: manipulation;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -10vh; left: 50%; transform: translateX(-50%);
+            width: 80vw; height: 40vh;
+            background: radial-gradient(circle at 50% 10%, rgba(251, 191, 36, 0.25) 0%, rgba(251, 191, 36, 0.05) 40%, rgba(0, 0, 0, 0) 70%);
+            z-index: 3; pointer-events: none; filter: blur(30px);
+        }
+
+        /* --- 수정된 부분 --- */
+        #fxCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 클릭 이벤트를 아래로 통과시킴 */
+            z-index: 20;          /* 두꺼비 이미지(z-index: 15)보다 높게 설정 */
+        }
+        /* ------------------ */
+
+        .wrapper {
+            position: relative;
+            width: 90%; 
+            max-width: 400px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            z-index: 10;
+            padding-top: 40px; 
+            padding-bottom: 20px;
+        }
+
+        .pure-title h1 {
+            font-size: clamp(1.6rem, 7vw, 2.3rem); 
+            font-weight: 900; 
+            letter-spacing: -1px;
+            background: linear-gradient(145deg, #fff7ad 0%, #fbbf24 45%, #d97706 100%);
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 clamp(35px, 8vh, 60px) 0; 
+            filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.6));
+            white-space: nowrap; 
+            text-align: center;
+        }
+
+        .toad-box {
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 1 / 1;
+            background-image: url('golden_toad.png'); 
+            background-size: contain;
+            background-repeat: no-repeat; 
+            background-position: center; 
+            z-index: 15; /* 두꺼비 이미지의 z-index */
+        }
+
+        .toad-box::after {
+            content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 35%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%);
+            z-index: 16; pointer-events: none;
+        }
+
+        .speech-bubble {
+            position: absolute; 
+            top: 75%; 
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.12); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); 
+            color: #fff;
+            padding: clamp(8px, 2vw, 12px) clamp(16px, 4vw, 24px); 
+            border-radius: 40px; 
+            font-weight: 900;
+            font-size: clamp(0.85rem, 3.8vw, 1.05rem); 
+            white-space: nowrap;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            z-index: 40;
+            animation: floatCute 2.5s ease-in-out infinite;
+        }
+
+        @keyframes floatCute { 
+            0%, 100% { transform: translate(-50%, 0); } 
+            50% { transform: translate(-50%, -6px); } 
+        }
+
+        #coin-trigger {
+            position: absolute; 
+            top: 46%; 
+            left: 33%; 
+            width: 25%; 
+            height: 25%;
+            border-radius: 50%; 
+            cursor: pointer; 
+            z-index: 200; /* 클릭 버튼의 z-index */
+            border: none; outline: none; -webkit-tap-highlight-color: transparent;
+            background: rgba(251, 191, 36, 0.02); 
+            animation: coinGlowPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes coinGlowPulse { 
+            0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); } 
+            50% { transform: scale(2.08); box-shadow: 0 0 100px 50px rgba(251, 191, 36, 0.35); } 
+            100% { transform: scale(0.85); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); } 
+        }
+
+        #result-area { 
+            display: flex; 
+            justify-content: center; 
+            gap: 8px; 
+            margin-top: -30px; 
+            z-index: 50; 
+            min-height: 50px; 
+            position: relative; 
+            width: 100%;
+        }
+
+        .ball { 
+            width: clamp(34px, 9vw, 42px);
+            height: clamp(34px, 9vw, 42px);
+            border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; 
+            font-size: 0.95rem; 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6); 
+            border: 1.5px solid rgba(255, 255, 255, 0.8); 
+            animation: trendyPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+        }
+
+        @keyframes trendyPop { 0% { transform: scale(0) translateY(30px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+
+        /* --- Glassmorphism Modal Styles --- */
+        #modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.4s ease;
+        }
+
+        .modal-content {
+            position: relative;
+            background: rgba(255, 255, 255, 0.07); 
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.18); 
+            border-radius: 32px;
+            padding: 40px 20px 30px; 
+            width: 85%; 
+            max-width: 340px;
+            text-align: center; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 
+                        inset 0 0 15px rgba(255, 255, 255, 0.05);
+            animation: modalUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-close-x {
+            position: absolute; top: 18px; right: 22px;
+            font-size: 1.2rem; color: rgba(255, 255, 255, 0.4);
+            cursor: pointer; transition: color 0.2s;
+        }
+        .modal-close-x:hover { color: #fff; }
+
+        @keyframes modalUp { 
+            0% { transform: scale(0.9) translateY(20px); opacity: 0; } 
+            100% { transform: scale(1) translateY(0); opacity: 1; } 
+        }
+
+        .modal-content h2 { 
+            font-size: 1.5rem; margin: 0 0 8px 0; color: #fff; font-weight: 800;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .modal-content p { 
+            font-size: 0.95rem; margin-bottom: 25px; 
+            color: rgba(255, 255, 255, 0.7); font-weight: 400; 
+        }
+
+        .modal-numbers { 
+            display: flex; justify-content: center; gap: 8px; 
+            margin-bottom: 30px; flex-wrap: nowrap; 
+        }
+        .modal-ball { 
+            width: 38px; height: 38px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; color: white; font-size: 0.9rem;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-group { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .share-btn { 
+            background: rgba(255, 255, 255, 0.08); color: #fff; 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            padding: 13px 0; width: 90%; border-radius: 18px; 
+            font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .share-btn:active { background: rgba(255, 255, 255, 0.15); }
+        .refresh-btn { 
+            background: linear-gradient(135deg, #fbbf24, #d97706); 
+            color: #000; border: none; padding: 15px 0; width: 90%; 
+            border-radius: 18px; font-weight: 900; cursor: pointer; 
+            box-shadow: 0 10px 20px -5px rgba(217, 119, 6, 0.4);
+        }
+        /* --- End of Modal Styles --- */
+
+        footer { 
+            width: 100%; text-align: center; font-size: 0.75rem; 
+            color: rgba(255, 255, 255, 0.3); z-index: 100; 
+            line-height: 1.8; margin-top: 25px; padding-bottom: 25px;
+        }
+        footer a { color: rgba(251, 191, 36, 0.5); text-decoration: none; }
+
+        .c1 { background: radial-gradient(circle at 30% 30%, #facc15, #ca8a04); }
+        .c2 { background: radial-gradient(circle at 30% 30%, #60a5fa, #2563eb); }
+        .c3 { background: radial-gradient(circle at 30% 30%, #f87171, #dc2626); }
+        .c4 { background: radial-gradient(circle at 30% 30%, #94a3b8, #475569); }
+        .c5 { background: radial-gradient(circle at 30% 30%, #4ade80, #16a34a); }
+    </style>
+</head>
+<body>
+
+    <canvas id="fxCanvas"></canvas>
+    
+    <div class="wrapper">
+        <div class="pure-title"><h1>💛금두꺼비 뚜링이의<br>로또 명당💛</h1></div>
+        <div class="toad-box">
+            <div class="speech-bubble">👆 금화를 꾹 터치해봐! </div>
+            <button id="coin-trigger" type="button"></button>
+        </div>
+        <div id="result-area"></div>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-close-x" onclick="resetToInitial()">✕</div>
+            <h2>🎉 1등 당첨 기원! 🎉</h2>
+            <p>💛금두꺼비 뚜링이가 고른 행운의 번호!</p>
+            <div id="modal-numbers" class="modal-numbers"></div>
+            <div class="btn-group">
+                <button class="share-btn" onclick="shareLuck()">✨ 행운 공유하기</button>
+                <button class="refresh-btn" onclick="resetToInitial()">🍀 다시 뽑기</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>재미로 보는 로또 명당 🍀 당첨되면 뚜링이한테 커피쿠폰 한 장 쏴주세여
+        <br>© 2026 Jisong Mun. All Rights Reserved.
+           <a href="mailto:namulangna0677@gmail.com">Contact Me</a>
+        </p>
+    </footer>
+
+    <script>
+        const trigger = document.getElementById('coin-trigger');
+        const display = document.getElementById('result-area');
+        const canvas = document.getElementById('fxCanvas');
+        const ctx = canvas.getContext('2d');
+        const modal = document.getElementById('modal-overlay');
+        const modalNumbers = document.getElementById('modal-numbers');
+
+        let particles = [];
+        const goldColorsArr = ['#fff7ad', '#fbbf24', '#d97706', '#facc15', '#fef3c7'];
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; if (window.devicePixelRatio > 1) { canvas.width *= 2; canvas.height *= 2; ctx.scale(2, 2); } }
+        window.addEventListener('resize', resize); resize();
+
+        function createNaturalFirework(x, y) {
+            for (let b = 0; b < 4; b++) { 
+                const count = 50; 
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const force = 1 + Math.random() * 4; 
+                    particles.push({ x, y, dx: Math.cos(angle) * force, dy: Math.sin(angle) * force, size: Math.random() * 2 + 1, color: goldColorsArr[Math.floor(Math.random() * goldColorsArr.length)], life: 2.5, decay: 0.01 + Math.random() * 0.01 });
+                }
+            }
+        }
+
+        function createMoneyRain() {
+            for (let i = 0; i < 40; i++) { 
+                particles.push({ type: Math.random() > 0.5 ? 'note' : 'coin', x: Math.random() * window.innerWidth, y: -50, dx: (Math.random() - 0.5) * 4, dy: Math.random() * 2 + 2, width: 16, height: 10, size: 5, color: goldColorsArr[Math.floor(Math.random() * goldColorsArr.length)], rotation: Math.random() * 360, rotationSpeed: (Math.random() - 0.5) * 8, life: 4.0, decay: 0.003 });
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            particles = particles.filter(p => p.life > 0);
+            particles.forEach(p => {
+                p.x += p.dx || 0; p.y += p.dy || 0;
+                if(!p.type) p.dy += 0.05; else p.dy += 0.02;
+                p.life -= p.decay; ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color;
+                if (!p.type) { ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); }
+                else { ctx.save(); ctx.translate(p.x, p.y); p.rotation += p.rotationSpeed; ctx.rotate(p.rotation * Math.PI / 180); if(p.type === 'note') ctx.fillRect(-p.width/2, -p.height/2, p.width, p.height); else { ctx.beginPath(); ctx.arc(0, 0, p.size, 0, Math.PI * 2); ctx.fill(); } ctx.restore(); }
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function pickNumbers() {
+            display.innerHTML = ''; modalNumbers.innerHTML = '';
+            let nums = [];
+            while(nums.length < 6) { let r = Math.floor(Math.random() * 45) + 1; if(!nums.includes(r)) nums.push(r); }
+            nums.sort((a, b) => a - b);
+            nums.forEach((n, i) => {
+                setTimeout(() => {
+                    const ball = document.createElement('div');
+                    let cIdx = Math.ceil(n / 10); if(cIdx > 5) cIdx = 5;
+                    ball.className = `ball c${cIdx}`;
+                    ball.innerText = n;
+                    display.appendChild(ball);
+
+                    const mBall = document.createElement('div');
+                    mBall.className = `modal-ball c${cIdx}`;
+                    mBall.innerText = n;
+                    modalNumbers.appendChild(mBall);
+
+                    if (i === 5) {
+                        setTimeout(() => { modal.style.display = 'flex'; setTimeout(() => { modal.style.opacity = '1'; }, 50); }, 1500);
+                    }
+                }, i * 180);
+            });
+        }
+
+        function resetToInitial() {
+            modal.style.opacity = '0';
+            setTimeout(() => { modal.style.display = 'none'; display.innerHTML = ''; modalNumbers.innerHTML = ''; }, 500);
+        }
+
+        function shareLuck() {
+            if (navigator.share) {
+                navigator.share({ title: '🍀 금두꺼비 로또 명당 🍀', text: '행운의 기운 받으러가기! 금두꺼비 뚜링이가 행운의 로또번호를 추천해드려요.', url: 'https://luckygoldentoad.netlify.app' });
+            } else {
+                alert('✨ 행운의 주소가 복사되었습니다!');
+            }
+        }
+
+        trigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (display.innerHTML !== '') return;
+            if (navigator.vibrate) navigator.vibrate(100); 
+            createNaturalFirework(e.clientX, e.clientY);
+            createMoneyRain();
+            pickNumbers();
+        });
+    </script>
+</body>
+</html>
