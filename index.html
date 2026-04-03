@@ -66,4 +66,186 @@
     </div>
 
     <div class="wrapper">
-        <div class="pure-title"><h1>💛금두꺼비 뚜링이의<br>로또 명당💛</h1>
+        <div class="pure-title"><h1>💛금두꺼비 뚜링이의<br>로또 명당💛</h1></div>
+        <div class="toad-box"><button id="coin-trigger" type="button"></button></div>
+        <div id="result-area"></div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color:#fff;">🎉 1등 당첨 기원! 🎉</h2>
+            <div id="modal-numbers" style="display:flex; justify-content:center; gap:8px; margin:25px 0;"></div>
+            <button class="save-btn" onclick="saveNumbersWithAuth()">💾 번호 저장하기</button>
+            <button style="background:none; border:none; color:#aaa; margin-top:20px; cursor:pointer;" onclick="resetToInitial()">다시 뽑기</button>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color:#fff;">🔑 로그인</h2>
+            <button class="social-btn" onclick="signInWithGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Google로 계속하기
+            </button>
+            <button style="background:none; border:none; color:#aaa; margin-top:20px; cursor:pointer;" onclick="closeAuthModal()">닫기</button>
+        </div>
+    </div>
+
+    <div id="my-numbers-page" class="page-container">
+        <div class="page-header"><div class="back-btn" onclick="closeMyNumbersPage()">←</div><div style="font-weight:bold;">💾 내 저장 번호</div></div>
+        <div id="my-numbers-content" style="padding:20px;"></div>
+    </div>
+
+    <div id="winning-history-page" class="page-container">
+        <div class="page-header"><div class="back-btn" onclick="closeWinningHistory()">←</div><div style="font-weight:bold;">🏆 역대 당첨번호</div></div>
+        <div id="winning-history-content" style="padding:20px;"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYCDVuP8z59cT1vvyH9vtfuavqSg9Sylc",
+            authDomain: "my-gold-toad-lotto.firebaseapp.com",
+            projectId: "my-gold-toad-lotto",
+            storageBucket: "my-gold-toad-lotto.firebasestorage.app",
+            messagingSenderId: "885154200318",
+            appId: "1:885154200318:web:c507895df31c2bca8c43af"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let currentUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('menu-guest').style.display = 'none';
+                document.getElementById('menu-user').style.display = 'block';
+                document.getElementById('menuUserEmail').textContent = user.email;
+            } else {
+                currentUser = null;
+                document.getElementById('menu-guest').style.display = 'block';
+                document.getElementById('menu-user').style.display = 'none';
+            }
+        });
+
+        window.toggleMenu = () => document.getElementById('menuDropdown').classList.toggle('show');
+        window.showAuthModal = () => { toggleMenu(); document.getElementById('auth-modal').style.display = 'flex'; setTimeout(() => document.getElementById('auth-modal').style.opacity = '1', 50); };
+        window.closeAuthModal = () => { document.getElementById('auth-modal').style.opacity = '0'; setTimeout(() => document.getElementById('auth-modal').style.display = 'none', 400); };
+        window.signInWithGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); closeAuthModal(); } catch (e) { alert('로그인 실패'); } };
+        window.logoutUser = () => { toggleMenu(); signOut(auth); };
+        window.saveNumbersWithAuth = async () => {
+            if (!currentUser) return showAuthModal();
+            try { await addDoc(collection(db, 'lotto_history'), { userId: currentUser.uid, numbers: window.currentNumbers, createdAt: new Date().toISOString(), timestamp: new Date() }); alert('💾 저장 완료!'); resetToInitial(); } catch (e) { alert('저장 실패'); }
+        };
+
+        window.openMyNumbersPage = async () => {
+            toggleMenu(); document.getElementById('my-numbers-page').style.display = 'block';
+            const content = document.getElementById('my-numbers-content');
+            content.innerHTML = '<div style="text-align:center; padding:50px;">불러오는 중...</div>';
+            try {
+                const q = query(collection(db, 'lotto_history'), where('userId', '==', currentUser.uid), orderBy('timestamp', 'desc'));
+                const snap = await getDocs(q);
+                let html = '';
+                snap.forEach(d => {
+                    const data = d.data();
+                    html += `<div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size:0.75rem; color:#888; margin-bottom:10px;">${new Date(data.createdAt).toLocaleString()}</div>
+                        <div style="display:flex; gap:6px; justify-content:center;">
+                            ${data.numbers.map(n => `<div class="ball c${Math.ceil(n/10)>5?5:Math.ceil(n/10)}" style="width:32px; height:32px; font-size:0.85rem;">${n}</div>`).join('')}
+                        </div>
+                    </div>`;
+                });
+                content.innerHTML = html || '<div style="text-align:center; padding:50px;">저장된 번호가 없습니다.</div>';
+            } catch (e) { content.innerHTML = '로드 실패'; }
+        };
+
+        window.showWinningHistory = async () => {
+            toggleMenu(); document.getElementById('winning-history-page').style.display = 'block';
+            const content = document.getElementById('winning-history-content');
+            content.innerHTML = '<div style="text-align:center; padding:50px;">데이터 로드 중...</div>';
+            try {
+                const firstDrawDate = new Date('2002-12-07 21:00:00');
+                const latestRound = Math.floor((new Date() - firstDrawDate) / (1000*60*60*24*7)) + 1;
+                let html = '';
+                for(let i=0; i<5; i++) {
+                    const round = latestRound - i;
+                    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`)}`);
+                    const raw = await res.json();
+                    const data = JSON.parse(raw.contents);
+                    if(data.returnValue === 'success') {
+                        html += `<div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);">
+                            <div style="color:#fbbf24; font-weight:bold; margin-bottom:10px;">${data.drwNo}회 (${data.drwNoDate})</div>
+                            <div style="display:flex; gap:6px; justify-content:center;">
+                                ${[data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6].map(n => `<div class="ball c${Math.ceil(n/10)>5?5:Math.ceil(n/10)}" style="width:32px; height:32px; font-size:0.85rem;">${n}</div>`).join('')}
+                                <div style="line-height:32px; color:#555;">+</div>
+                                <div class="ball c${Math.ceil(data.bnusNo/10)>5?5:Math.ceil(data.bnusNo/10)}" style="width:32px; height:32px; font-size:0.85rem;">${data.bnusNo}</div>
+                            </div>
+                        </div>`;
+                    }
+                }
+                content.innerHTML = html;
+            } catch (e) { content.innerHTML = '실패'; }
+        };
+        window.closeWinningHistory = () => document.getElementById('winning-history-page').style.display = 'none';
+        window.closeMyNumbersPage = () => document.getElementById('my-numbers-page').style.display = 'none';
+    </script>
+
+    <script>
+        // 지송님의 애니메이션 로직 복구
+        const trigger = document.getElementById('coin-trigger');
+        const display = document.getElementById('result-area');
+        const canvas = document.getElementById('fxCanvas');
+        const ctx = canvas.getContext('2d');
+        const modal = document.getElementById('modal-overlay');
+        const modalNums = document.getElementById('modal-numbers');
+        window.currentNumbers = [];
+        let particles = [];
+        const colors = ['#fff7ad', '#fbbf24', '#d97706'];
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
+        function createFX(x, y) {
+            for(let i=0; i<50; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const force = 1 + Math.random() * 3;
+                particles.push({ x, y, dx: Math.cos(angle)*force, dy: Math.sin(angle)*force, size: Math.random()*2+1, color: colors[Math.floor(Math.random()*3)], life: 1, decay: 0.02 });
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach((p, i) => {
+                p.x += p.dx; p.y += p.dy; p.dy += 0.05; p.life -= p.decay;
+                ctx.globalAlpha = p.life; ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+                if(p.life <= 0) particles.splice(i, 1);
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        trigger.addEventListener('click', (e) => {
+            if(display.innerHTML !== '') return;
+            createFX(e.clientX, e.clientY);
+            let nums = [];
+            while(nums.length < 6) { let r = Math.floor(Math.random()*45)+1; if(!nums.includes(r)) nums.push(r); }
+            nums.sort((a,b)=>a-b); window.currentNumbers = nums;
+            nums.forEach((n, i) => {
+                setTimeout(() => {
+                    const cIdx = Math.ceil(n/10)>5?5:Math.ceil(n/10);
+                    const html = `<div class="ball c${cIdx}">${n}</div>`;
+                    display.innerHTML += html; modalNums.innerHTML += html;
+                    if(i === 5) setTimeout(() => { modal.style.display = 'flex'; setTimeout(() => modal.style.opacity = '1', 50); }, 1000);
+                }, i * 200);
+            });
+        });
+
+        window.resetToInitial = () => { modal.style.opacity = '0'; setTimeout(() => { modal.style.display = 'none'; display.innerHTML = ''; modalNums.innerHTML = ''; }, 400); };
+    </script>
+</body>
+</html>
