@@ -806,23 +806,23 @@
     <div class="menu-dropdown" id="menuDropdown">
         <!-- 로그인 전 메뉴 -->
         <div id="menu-guest">
-            <div class="menu-item" onclick="showAuthModal()">🔑 로그인</div>
-            <div class="menu-item" onclick="showWinningHistory()">🏆 역대 당첨번호</div>
+            <div class="menu-item" onclick="showAuthModal()">로그인</div>
+            <div class="menu-item" onclick="showWinningHistory()">역대 당첨번호</div>
         </div>
         
         <!-- 로그인 후 메뉴 -->
         <div id="menu-user" style="display: none;">
             <div class="user-email-menu" id="menuUserEmail"></div>
-            <div class="menu-item" onclick="openMyNumbersPage()">💾 내 번호</div>
-            <div class="menu-item" onclick="showWinningHistory()">🏆 역대 당첨번호</div>
-            <div class="menu-item" onclick="logoutUser()">🚪 로그아웃</div>
+            <div class="menu-item" onclick="openMyNumbersPage()">내 번호</div>
+            <div class="menu-item" onclick="showWinningHistory()">역대 당첨번호</div>
+            <div class="menu-item" onclick="logoutUser()">로그아웃</div>
         </div>
     </div>
 
     <div class="wrapper">
         <div class="pure-title"><h1>💛금두꺼비 뚜링이의<br>로또 명당💛</h1></div>
         <div class="toad-box">
-            <div class="speech-bubble">👆 금화를 꾹 터치해봐! </div>
+            <div class="speech-bubble">👆 금화를 클릭 터치해봐! </div>
             <button id="coin-trigger" type="button"></button>
         </div>
         <div id="result-area"></div>
@@ -833,12 +833,12 @@
         <div class="modal-content">
             <div class="modal-close-x" onclick="resetToInitial()">✕</div>
             <h2>🎉 1등 당첨 기원! 🎉</h2>
-            <p>💛금두꺼비 뚜링이가 고른 행운의 번호!</p>
+            <p>금두꺼비 뚜링이가 고른 행운의 번호!</p>
             <div id="modal-numbers" class="modal-numbers"></div>
             <div class="btn-group">
-                <button class="save-btn" onclick="saveNumbersWithAuth()">💾 번호 저장하기</button>
-                <button class="share-btn" onclick="shareLuck()">✨ 행운 공유하기</button>
-                <button class="refresh-btn" onclick="resetToInitial()">🍀 다시 뽑기</button>
+                <button class="save-btn" onclick="saveNumbersWithAuth()">번호 저장하기</button>
+                <button class="share-btn" onclick="shareLuck()">행운 공유하기</button>
+                <button class="refresh-btn" onclick="resetToInitial()">다시 뽑기</button>
             </div>
         </div>
     </div>
@@ -898,11 +898,11 @@
     <div id="my-numbers-page" class="page-container">
         <div class="page-header">
             <div class="back-btn" onclick="closeMyNumbersPage()">←</div>
-            <div class="page-title">💾 내 저장 번호</div>
+            <div class="page-title">내 저장 번호 관리</div>
         </div>
         <div class="page-content" id="my-numbers-content">
             <div class="empty-state">
-                <div class="empty-state-icon">📋</div>
+                <div class="empty-state-icon">😅</div>
                 <div class="empty-state-text">저장된 번호가 없습니다</div>
                 <div class="empty-state-subtext">금화를 터치해서 번호를 뽑아보세요!</div>
             </div>
