@@ -6,54 +6,49 @@
     <title>💛 금두꺼비 로또번호 추천 명당 💛</title>
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
     <style>
-        /* [이전과 동일한 기본 스타일 유지] */
+        /* [지송님의 오리지널 화려한 스타일 복구] */
         body { background-color: #000; color: #fff; font-family: 'Pretendard', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100dvh; overflow-x: hidden; overflow-y: auto; touch-action: manipulation; position: relative; }
         body::before { content: ''; position: fixed; top: -10vh; left: 50%; transform: translateX(-50%); width: 80vw; height: 40vh; background: radial-gradient(circle at 50% 10%, rgba(251, 191, 36, 0.25) 0%, rgba(251, 191, 36, 0.05) 40%, rgba(0, 0, 0, 0) 70%); z-index: 3; pointer-events: none; filter: blur(30px); }
         #fxCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
         .wrapper { position: relative; width: 90%; max-width: 400px; display: flex; flex-direction: column; align-items: center; z-index: 10; padding-top: 40px; padding-bottom: 20px; }
 
-        /* 햄버거 메뉴 및 드롭다운 */
+        /* 메뉴 스타일 */
         .menu-btn { position: fixed; top: 20px; right: 20px; width: 44px; height: 44px; background: transparent; border: none; border-radius: 12px; cursor: pointer; z-index: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: 0.2s; }
         .menu-btn span { width: 20px; height: 2px; background: #fbbf24; border-radius: 2px; }
-        .menu-dropdown { position: fixed; top: 75px; right: 20px; background: rgba(18, 18, 18, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 20px; padding: 12px; min-width: 200px; z-index: 550; display: none; opacity: 0; transition: 0.3s; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8); }
+        .menu-dropdown { position: fixed; top: 75px; right: 20px; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; padding: 10px; min-width: 180px; z-index: 550; display: none; opacity: 0; transition: opacity 0.3s ease; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
         .menu-dropdown.show { display: block; opacity: 1; }
-        .menu-item { padding: 12px 16px; color: #fff; font-size: 0.95rem; font-weight: 500; cursor: pointer; border-radius: 12px; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
-        .menu-item:active { background: rgba(251, 191, 36, 0.15); }
+        .menu-item { padding: 12px 16px; color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; font-weight: 500; cursor: pointer; border-radius: 10px; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
 
-        /* [핵심 수정] 이메일 표시 스타일 강화 */
-        .user-email-menu { 
-            padding: 12px 16px 14px 16px; 
-            font-size: 0.85rem; 
-            color: #fbbf24; /* 지송님 사이트의 포인트 컬러인 노란색으로 강조 */
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-            margin-bottom: 8px;
-            word-break: break-all;
-            line-height: 1.4;
-        }
+        /* [수정] 이메일 표시 스타일 강화 */
+        .user-email-menu { padding: 12px 16px; font-size: 0.85rem; color: #fbbf24; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 8px; font-weight: bold; }
 
-        /* [이후 로직 관련 스타일 생략 - 이전과 동일] */
-        .pure-title h1 { font-size: clamp(1.6rem, 7vw, 2.3rem); font-weight: 900; background: linear-gradient(145deg, #fff7ad 0%, #fbbf24 45%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; margin-bottom: 50px; }
-        .toad-box { position: relative; width: 100%; aspect-ratio: 1/1; background: url('https://gold-lotto-three.vercel.app/golden_toad.png') no-repeat center/contain; z-index: 15; }
-        #coin-trigger { position: absolute; top: 46%; left: 33%; width: 25%; height: 25%; border-radius: 50%; cursor: pointer; z-index: 200; background: transparent; border: none; }
-        #result-area { display: flex; justify-content: center; gap: 8px; margin-top: -30px; min-height: 50px; }
-        .ball { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1.5px solid #fff; animation: trendyPop 0.6s forwards; }
-        @keyframes trendyPop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: 0.4s; }
-        .modal-content { background: #1a1a1a; border-radius: 32px; padding: 40px 20px; width: 85%; max-width: 340px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        .social-btn { background: #fff; color: #000; border: none; padding: 14px; border-radius: 16px; width: 100%; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; margin-top: 10px; }
+        /* 타이틀 및 두꺼비 효과 복구 */
+        .pure-title h1 { font-size: clamp(1.6rem, 7vw, 2.3rem); font-weight: 900; letter-spacing: -1px; background: linear-gradient(145deg, #fff7ad 0%, #fbbf24 45%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 clamp(35px, 8vh, 60px) 0; filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.6)); text-align: center; }
+        .toad-box { position: relative; width: 100%; aspect-ratio: 1 / 1; background-image: url('https://gold-lotto-three.vercel.app/golden_toad.png'); background-size: contain; background-repeat: no-repeat; background-position: center; z-index: 15; }
+        #coin-trigger { position: absolute; top: 46%; left: 33%; width: 25%; height: 25%; border-radius: 50%; cursor: pointer; z-index: 200; background: transparent; border: none; animation: coinGlowPulse 2s infinite ease-in-out; }
+        @keyframes coinGlowPulse { 0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); } 50% { transform: scale(2.08); box-shadow: 0 0 100px 50px rgba(251, 191, 36, 0.35); } 100% { transform: scale(0.85); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); } }
+        
+        .ball { width: clamp(34px, 9vw, 42px); height: clamp(34px, 9vw, 42px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.6); border: 1.5px solid rgba(255, 255, 255, 0.8); animation: trendyPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes trendyPop { 0% { transform: scale(0) translateY(30px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+
+        /* 모달 및 버튼 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.4s; }
+        .modal-content { background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 32px; padding: 40px 20px; width: 85%; max-width: 340px; text-align: center; }
+        .social-btn { background: #fff; color: #333; border: none; padding: 14px; border-radius: 16px; width: 100%; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; }
+        .save-btn { background: linear-gradient(135deg, #fbbf24, #d97706); color: #fff; border: none; padding: 15px 0; width: 90%; border-radius: 18px; font-weight: 900; cursor: pointer; font-size: 1rem; margin-top: 20px; }
+
         .c1 { background: radial-gradient(circle at 30% 30%, #facc15, #ca8a04); }
         .c2 { background: radial-gradient(circle at 30% 30%, #60a5fa, #2563eb); }
         .c3 { background: radial-gradient(circle at 30% 30%, #f87171, #dc2626); }
         .c4 { background: radial-gradient(circle at 30% 30%, #94a3b8, #475569); }
         .c5 { background: radial-gradient(circle at 30% 30%, #4ade80, #16a34a); }
+        
         .page-container { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #000; z-index: 1500; display: none; overflow-y: auto; }
-        .page-header { position: sticky; top: 0; background: #000; padding: 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #222; }
-        .back-btn { color: #fbbf24; cursor: pointer; font-size: 1.5rem; }
+        .page-header { position: sticky; top: 0; background: rgba(0, 0, 0, 0.9); padding: 20px; display: flex; align-items: center; gap: 15px; z-index: 100; }
+        .back-btn { color: #fbbf24; cursor: pointer; font-size: 1.2rem; }
     </style>
 </head>
 <body>
-
     <canvas id="fxCanvas"></canvas>
     <div class="menu-btn" onclick="toggleMenu()"><span></span><span></span><span></span></div>
 
@@ -71,206 +66,4 @@
     </div>
 
     <div class="wrapper">
-        <div class="pure-title"><h1>💛금두꺼비 뚜링이의<br>로또 명당💛</h1></div>
-        <div class="toad-box">
-            <button id="coin-trigger" type="button"></button>
-        </div>
-        <div id="result-area"></div>
-    </div>
-
-    <div id="modal-overlay" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="color:#fff;">🎉 행운의 번호! 🎉</h2>
-            <div id="modal-numbers" style="display:flex; justify-content:center; gap:8px; margin:25px 0;"></div>
-            <button class="social-btn" style="background:#fbbf24;" onclick="saveNumbersWithAuth()">💾 번호 저장하기</button>
-            <button style="background:none; border:none; color:#888; margin-top:20px; cursor:pointer;" onclick="resetToInitial()">닫기</button>
-        </div>
-    </div>
-
-    <div id="auth-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="color:#fff;">🔑 로그인</h2>
-            <p style="color:#888; margin-bottom:25px;">금두꺼비와 함께 행운을 기록하세요!</p>
-            
-            <div class="social-login-container">
-                <button class="social-btn" onclick="signInWithGoogle()">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-                    Google로 계속하기
-                </button>
-                </div>
-            
-            <button style="background:none; border:none; color:#888; margin-top:20px; cursor:pointer;" onclick="closeAuthModal()">닫기</button>
-        </div>
-    </div>
-
-    <div id="my-numbers-page" class="page-container">
-        <div class="page-header"><div class="back-btn" onclick="closeMyNumbersPage()">←</div><div style="font-weight:bold;">내 저장 번호</div></div>
-        <div id="my-numbers-content" style="padding:20px;"></div>
-    </div>
-
-    <div id="winning-history-page" class="page-container">
-        <div class="page-header"><div class="back-btn" onclick="closeWinningHistory()">←</div><div style="font-weight:bold;">역대 당첨번호</div></div>
-        <div id="winning-history-content" style="padding:20px;"></div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, collection, addDoc, query, where, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDYCDVuP8z59cT1vvyH9vtfuavqSg9Sylc",
-            authDomain: "my-gold-toad-lotto.firebaseapp.com",
-            projectId: "my-gold-toad-lotto",
-            storageBucket: "my-gold-toad-lotto.firebasestorage.app",
-            messagingSenderId: "885154200318",
-            appId: "1:885154200318:web:c507895df31c2bca8c43af"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        let currentUser = null;
-
-        // [수정] 인증 상태 감지 로직 강화
-        onAuthStateChanged(auth, (user) => {
-            const menuGuest = document.getElementById('menu-guest');
-            const menuUser = document.getElementById('menu-user');
-            const emailDisplay = document.getElementById('menuUserEmail');
-
-            if (user) {
-                currentUser = user;
-                menuGuest.style.display = 'none';
-                menuUser.style.display = 'block';
-                // [핵심] 이메일 텍스트 삽입 및 스타일 확인
-                emailDisplay.textContent = user.email;
-                console.log("로그인 성공 이메일:", user.email);
-            } else {
-                currentUser = null;
-                menuGuest.style.display = 'block';
-                menuUser.style.display = 'none';
-                emailDisplay.textContent = '';
-            }
-        });
-
-        window.toggleMenu = () => document.getElementById('menuDropdown').classList.toggle('show');
-        window.showAuthModal = () => { toggleMenu(); const m = document.getElementById('auth-modal'); m.style.display = 'flex'; setTimeout(() => m.style.opacity = '1', 50); };
-        window.closeAuthModal = () => { const m = document.getElementById('auth-modal'); m.style.opacity = '0'; setTimeout(() => m.style.display = 'none', 400); };
-        
-        window.signInWithGoogle = async () => {
-            try {
-                await signInWithPopup(auth, new GoogleAuthProvider());
-                closeAuthModal();
-            } catch (e) { alert('로그인 실패: ' + e.message); }
-        };
-
-        window.logoutUser = () => { toggleMenu(); signOut(auth); };
-
-        window.saveNumbersWithAuth = async () => {
-            if (!currentUser) return showAuthModal();
-            try {
-                await addDoc(collection(db, 'lotto_history'), {
-                    userId: currentUser.uid,
-                    numbers: window.currentNumbers,
-                    createdAt: new Date().toISOString(),
-                    timestamp: new Date()
-                });
-                alert('💾 번호가 저장되었습니다!');
-                resetToInitial();
-            } catch (e) { alert('저장 실패'); }
-        };
-
-        // [나머지 불러오기 로직 생략 - 이전과 동일]
-        window.openMyNumbersPage = async () => {
-            toggleMenu();
-            document.getElementById('my-numbers-page').style.display = 'block';
-            const content = document.getElementById('my-numbers-content');
-            content.innerHTML = '<div style="text-align:center; padding:50px;">불러오는 중...</div>';
-            
-            const q = query(collection(db, 'lotto_history'), where('userId', '==', currentUser.uid), orderBy('timestamp', 'desc'));
-            const snap = await getDocs(q);
-            let html = '';
-            snap.forEach(d => {
-                const data = d.data();
-                html += `<div class="winning-card" style="background:#1a1a1a; padding:20px; border-radius:20px; margin-bottom:15px; border:1px solid #333;">
-                    <div style="font-size:0.75rem; color:#888; margin-bottom:12px;">${new Date(data.createdAt).toLocaleString()}</div>
-                    <div style="display:flex; gap:6px; justify-content:center;">
-                        ${data.numbers.map(n => `<div class="ball c${Math.ceil(n/10)>5?5:Math.ceil(n/10)}" style="width:32px; height:32px; font-size:0.85rem;">${n}</div>`).join('')}
-                    </div>
-                </div>`;
-            });
-            content.innerHTML = html || '<div style="text-align:center; padding:50px; color:#666;">저장된 번호가 없습니다.</div>';
-        };
-
-        window.showWinningHistory = async () => {
-            toggleMenu();
-            const page = document.getElementById('winning-history-page');
-            page.style.display = 'block';
-            const content = document.getElementById('winning-history-content');
-            content.innerHTML = '<div style="text-align:center; padding:50px;">당첨번호 확인 중...</div>';
-
-            try {
-                const firstDrawDate = new Date('2002-12-07 21:00:00');
-                const latestRound = Math.floor((new Date() - firstDrawDate) / (1000*60*60*24*7)) + 1;
-                let html = '';
-                for(let i=0; i<5; i++) {
-                    const round = latestRound - i;
-                    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`)}`);
-                    const raw = await res.json();
-                    const data = JSON.parse(raw.contents);
-                    if(data.returnValue === 'success') {
-                        const nums = [data.drwtNo1, data.drwtNo2, data.drwtNo3, data.drwtNo4, data.drwtNo5, data.drwtNo6];
-                        html += `<div class="winning-card" style="background:#1a1a1a; padding:20px; border-radius:20px; margin-bottom:15px; border:1px solid #333;">
-                            <div style="color:#fbbf24; font-weight:bold; margin-bottom:10px;">${data.drwNo}회 (${data.drwNoDate})</div>
-                            <div style="display:flex; gap:6px; justify-content:center;">
-                                ${nums.map(n => `<div class="ball c${Math.ceil(n/10)>5?5:Math.ceil(n/10)}" style="width:32px; height:32px; font-size:0.85rem;">${n}</div>`).join('')}
-                                <div style="line-height:32px; color:#555;">+</div>
-                                <div class="ball c${Math.ceil(data.bnusNo/10)>5?5:Math.ceil(data.bnusNo/10)}" style="width:32px; height:32px; font-size:0.85rem;">${data.bnusNo}</div>
-                            </div>
-                        </div>`;
-                    }
-                }
-                content.innerHTML = html;
-            } catch (e) { content.innerHTML = '<div style="text-align:center; padding:50px;">로딩 실패</div>'; }
-        };
-
-        window.closeWinningHistory = () => document.getElementById('winning-history-page').style.display = 'none';
-        window.closeMyNumbersPage = () => document.getElementById('my-numbers-page').style.display = 'none';
-    </script>
-
-    <script>
-        // 추첨 및 애니메이션 관련 기존 스크립트 그대로 유지
-        const trigger = document.getElementById('coin-trigger');
-        const display = document.getElementById('result-area');
-        const modal = document.getElementById('modal-overlay');
-        const modalNums = document.getElementById('modal-numbers');
-        window.currentNumbers = [];
-
-        trigger.addEventListener('click', () => {
-            if(display.innerHTML !== '') return;
-            let nums = [];
-            while(nums.length < 6) { let r = Math.floor(Math.random()*45)+1; if(!nums.includes(r)) nums.push(r); }
-            nums.sort((a,b) => a-b);
-            window.currentNumbers = nums;
-
-            nums.forEach((n, i) => {
-                setTimeout(() => {
-                    const cIdx = Math.ceil(n/10) > 5 ? 5 : Math.ceil(n/10);
-                    const ballHtml = `<div class="ball c${cIdx}">${n}</div>`;
-                    display.innerHTML += ballHtml;
-                    modalNums.innerHTML += ballHtml;
-                    if(i === 5) {
-                        setTimeout(() => { modal.style.display = 'flex'; setTimeout(() => modal.style.opacity = '1', 50); }, 1000);
-                    }
-                }, i * 200);
-            });
-        });
-
-        window.resetToInitial = () => {
-            const m = document.getElementById('modal-overlay');
-            m.style.opacity = '0';
-            setTimeout(() => { m.style.display = 'none'; display.innerHTML = ''; modalNums.innerHTML = ''; }, 400);
-        };
-    </script>
-</body>
-</html>
+        <div class="pure-title"><h1>💛금두꺼비 뚜링이의<br>로또 명당💛</h1>
