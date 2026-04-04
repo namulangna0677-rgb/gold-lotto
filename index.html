@@ -839,7 +839,7 @@
         <!-- 로그인 후 메뉴 -->
         <div id="menu-user" style="display: none;">
             <div class="user-email-menu" id="menuUserEmail"></div>
-            <div class="menu-item" onclick="openMyNumbersPage()">내 번호</div>
+            <div class="menu-item" onclick="openMyNumbersPage()">내 번호 관리</div>
             <div class="menu-item" onclick="showWinningHistory()">역대 당첨번호</div>
             <div class="menu-item" onclick="logoutUser()">로그아웃</div>
         </div>
@@ -924,7 +924,7 @@
     <div id="my-numbers-page" class="page-container">
         <div class="page-header">
             <div class="back-btn" onclick="closeMyNumbersPage()">←</div>
-            <div class="page-title">내 저장 번호 관리</div>
+            <div class="page-title">내 번호 관리</div>
         </div>
         <div class="page-content" id="my-numbers-content">
             <div class="empty-state">
@@ -1230,13 +1230,17 @@ document.getElementById('menuUserEmail').textContent = userEmail;
                 `;
             } else {
                 const cardsHtml = history.map(item => {
-                    const date = new Date(item.createdAt).toLocaleString('ko-KR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                    const dateObj = new Date(item.createdAt);
+const dateStr = dateObj.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+});
+const timeStr = dateObj.toLocaleTimeString('ko-KR', {
+    hour: '2-digit',
+    minute: '2-digit'
+});
+const date = `${dateStr}<br>${timeStr}`;
                     const numbersHtml = item.numbers.map(n => {
                         let cIdx = Math.ceil(n / 10);
                         if (cIdx > 5) cIdx = 5;
