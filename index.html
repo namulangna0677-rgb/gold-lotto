@@ -147,6 +147,9 @@
 
         .menu-item:hover {
             background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
         }
 
         .menu-item:active {
@@ -156,9 +159,19 @@
         .user-email-menu {
             padding: 12px 16px;
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.7);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 8px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: 0.2s;
+        }
+
+        .user-email-menu:hover {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .pure-title h1 {
@@ -773,6 +786,83 @@
             color: rgba(255, 255, 255, 0.5);
             font-size: 0.9rem;
         }
+
+        /* 계정관리 페이지 */
+        .account-info-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .account-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .account-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .account-info-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .account-info-value {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+
+        .danger-zone {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 32px;
+        }
+
+        .danger-zone-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ef4444;
+            margin-bottom: 12px;
+        }
+
+        .danger-zone-text {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .delete-account-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            padding: 14px 0;
+            width: 100%;
+            border-radius: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .delete-account-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .delete-account-btn:active {
+            background: rgba(239, 68, 68, 0.35);
+        }
     </style>
 </head>
 <body>
@@ -797,7 +887,7 @@
         
         <!-- 로그인 후 메뉴 -->
         <div id="menu-user" style="display: none;">
-            <div class="user-email-menu" id="menuUserEmail"></div>
+            <div class="user-email-menu" id="menuUserEmail" onclick="openAccountPage()"></div>
             <div class="menu-item" onclick="openMyNumbersPage()">내 번호 관리</div>
             <div class="menu-item" onclick="showWinningHistory()">역대 당첨번호</div>
             <div class="menu-item" onclick="logoutUser()">로그아웃</div>
@@ -900,6 +990,41 @@
         <div class="page-content" id="winning-history-content">
             <h2 class="page-title">🏆 역대 당첨번호</h2>
             <div class="loading-spinner">당첨번호를 불러오는 중...</div>
+        </div>
+    </div>
+
+    <!-- 계정관리 페이지 -->
+    <div id="account-page" class="page-container">
+        <div class="page-header">
+            <div class="back-btn" onclick="closeAccountPage()">←</div>
+        </div>
+        <div class="page-content">
+            <h2 class="page-title">⚙️ 계정 관리</h2>
+            
+            <div class="account-info-card">
+                <div class="account-info-row">
+                    <div class="account-info-label">이메일</div>
+                    <div class="account-info-value" id="account-email">-</div>
+                </div>
+                <div class="account-info-row">
+                    <div class="account-info-label">가입일</div>
+                    <div class="account-info-value" id="account-created">-</div>
+                </div>
+                <div class="account-info-row">
+                    <div class="account-info-label">로그인 방법</div>
+                    <div class="account-info-value" id="account-provider">-</div>
+                </div>
+            </div>
+
+            <div class="danger-zone">
+                <div class="danger-zone-title">⚠️ 위험 구역</div>
+                <div class="danger-zone-text">
+                    계정을 삭제하면 저장된 모든 번호 기록이 영구적으로 삭제되며, 복구할 수 없습니다.
+                </div>
+                <button class="delete-account-btn" onclick="confirmDeleteAccount()">
+                    계정 탈퇴하기
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1237,6 +1362,110 @@
             const page = document.getElementById('winning-history-page');
             page.classList.remove('active');
             setTimeout(() => { page.style.display = 'none'; }, 300);
+        };
+
+        // 계정관리 페이지 열기
+        window.openAccountPage = () => {
+            document.getElementById('menuDropdown').classList.remove('show');
+            
+            if (!currentUser) {
+                showAuthModal();
+                return;
+            }
+
+            const page = document.getElementById('account-page');
+            page.style.display = 'block';
+            setTimeout(() => { page.classList.add('active'); }, 10);
+
+            // 계정 정보 표시
+            const email = currentUser.email || currentUser.providerData[0]?.email || '정보 없음';
+            const createdAt = currentUser.metadata.creationTime 
+                ? new Date(currentUser.metadata.creationTime).toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })
+                : '정보 없음';
+            
+            let provider = '이메일';
+            if (currentUser.providerData && currentUser.providerData.length > 0) {
+                const providerId = currentUser.providerData[0].providerId;
+                if (providerId === 'google.com') provider = 'Google';
+                else if (providerId === 'apple.com') provider = 'Apple';
+                else if (providerId === 'password') provider = '이메일';
+            }
+
+            document.getElementById('account-email').textContent = email;
+            document.getElementById('account-created').textContent = createdAt;
+            document.getElementById('account-provider').textContent = provider;
+        };
+
+        // 계정관리 페이지 닫기
+        window.closeAccountPage = () => {
+            const page = document.getElementById('account-page');
+            page.classList.remove('active');
+            setTimeout(() => { page.style.display = 'none'; }, 300);
+        };
+
+        // 계정 탈퇴 확인
+        window.confirmDeleteAccount = () => {
+            const confirmed = confirm(
+                '⚠️ 정말로 계정을 삭제하시겠습니까?\n\n' +
+                '이 작업은 되돌릴 수 없으며,\n' +
+                '저장된 모든 번호 기록이 영구적으로 삭제됩니다.'
+            );
+            
+            if (confirmed) {
+                const doubleCheck = confirm(
+                    '마지막 확인입니다.\n\n' +
+                    '계정을 삭제하면 모든 데이터가 영구 삭제됩니다.\n' +
+                    '정말 진행하시겠습니까?'
+                );
+                
+                if (doubleCheck) {
+                    deleteAccount();
+                }
+            }
+        };
+
+        // 계정 삭제 실행
+        window.deleteAccount = async () => {
+            if (!currentUser) return;
+
+            try {
+                // 1. Firestore에서 사용자 데이터 삭제
+                const q = query(
+                    collection(db, 'lotto_history'),
+                    where('userId', '==', currentUser.uid)
+                );
+                const snapshot = await getDocs(q);
+                const deletePromises = [];
+                snapshot.forEach((docSnap) => {
+                    deletePromises.push(deleteDoc(doc(db, 'lotto_history', docSnap.id)));
+                });
+                await Promise.all(deletePromises);
+
+                // 2. Firebase Auth에서 계정 삭제
+                const { deleteUser } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+                await deleteUser(currentUser);
+
+                // 3. 페이지 닫고 메인으로
+                closeAccountPage();
+                alert('계정이 성공적으로 삭제되었습니다. 그동안 이용해 주셔서 감사합니다.');
+                
+            } catch (error) {
+                console.error('계정 삭제 오류:', error);
+                
+                // 재인증이 필요한 경우
+                if (error.code === 'auth/requires-recent-login') {
+                    alert(
+                        '보안을 위해 최근에 로그인한 기록이 필요합니다.\n' +
+                        '로그아웃 후 다시 로그인한 다음 계정 탈퇴를 진행해주세요.'
+                    );
+                } else {
+                    alert('계정 삭제에 실패했습니다. 다시 시도해주세요.');
+                }
+            }
         };
 
         window.loadWinningNumbers = async () => {
