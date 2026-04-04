@@ -110,14 +110,14 @@
 
         .menu-dropdown {
             position: fixed;
-            top: 55px;
-            left: 8px;
+            top: 0;
+            left: 0;
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(40px) saturate(180%) brightness(1.1);
             -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.1);
-            border-radius: 20px;
-            padding: 10px;
-            min-width: 180px;
+            border-radius: 0 0 20px 20px;
+            padding: 60px 10px 10px 10px;
+            min-width: 200px;
             z-index: 150;
             display: none;
             opacity: 0;
@@ -160,7 +160,6 @@
             padding: 12px 16px;
             font-size: 0.8rem;
             color: rgba(255, 255, 255, 0.7);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 8px;
             cursor: pointer;
             border-radius: 10px;
@@ -540,6 +539,7 @@
             display: flex;
             align-items: center;
             padding: 0 8px;
+            gap: 8px;
         }
 
         .back-btn {
@@ -555,6 +555,7 @@
             font-size: 1.2rem;
             color: #fbbf24;
             transition: 0.2s;
+            flex-shrink: 0;
         }
 
         .back-btn:hover {
@@ -566,10 +567,10 @@
         }
 
         .page-title {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: 800;
             color: #fff;
-            margin: 0 0 20px 0;
+            margin: 0;
             text-align: left;
         }
 
@@ -971,9 +972,9 @@
     <div id="my-numbers-page" class="page-container">
         <div class="page-header">
             <div class="back-btn" onclick="closeMyNumbersPage()">←</div>
+            <h2 class="page-title">내 번호 관리</h2>
         </div>
         <div class="page-content" id="my-numbers-content">
-            <h2 class="page-title">내 번호 관리</h2>
             <div class="empty-state">
                 <div class="empty-state-icon">😅</div>
                 <div class="empty-state-text">저장된 번호가 없습니다</div>
@@ -986,9 +987,9 @@
     <div id="winning-history-page" class="page-container">
         <div class="page-header">
             <div class="back-btn" onclick="closeWinningHistory()">←</div>
+            <h2 class="page-title">🏆 역대 당첨번호</h2>
         </div>
         <div class="page-content" id="winning-history-content">
-            <h2 class="page-title">🏆 역대 당첨번호</h2>
             <div class="loading-spinner">당첨번호를 불러오는 중...</div>
         </div>
     </div>
@@ -997,10 +998,9 @@
     <div id="account-page" class="page-container">
         <div class="page-header">
             <div class="back-btn" onclick="closeAccountPage()">←</div>
+            <h2 class="page-title">⚙️ 계정 관리</h2>
         </div>
         <div class="page-content">
-            <h2 class="page-title">⚙️ 계정 관리</h2>
-            
             <div class="account-info-card">
                 <div class="account-info-row">
                     <div class="account-info-label">이메일</div>
@@ -1264,7 +1264,6 @@
 
             if (history.length === 0) {
                 content.innerHTML = `
-                    <h2 class="page-title">내 번호 관리</h2>
                     <div class="empty-state">
                         <div class="empty-state-icon">📋</div>
                         <div class="empty-state-text">저장된 번호가 없습니다</div>
@@ -1308,7 +1307,6 @@
                 }).join('');
                 
                 content.innerHTML = `
-                    <h2 class="page-title">내 번호 관리</h2>
                     ${cardsHtml}
                     <div class="add-number-card">
                         <div class="add-number-btn" onclick="goToDrawPage()">+</div>
@@ -1470,7 +1468,7 @@
 
         window.loadWinningNumbers = async () => {
             const content = document.getElementById('winning-history-content');
-            content.innerHTML = '<h2 class="page-title">🏆 역대 당첨번호</h2><div class="loading-spinner">당첨번호를 불러오는 중...</div>';
+            content.innerHTML = '<div class="loading-spinner">당첨번호를 불러오는 중...</div>';
 
             try {
                 const firstDrawDate = new Date('2002-12-07');
@@ -1518,7 +1516,6 @@
 
                 if (rounds.length === 0) {
                     content.innerHTML = `
-                        <h2 class="page-title">🏆 역대 당첨번호</h2>
                         <div class="empty-state">
                             <div class="empty-state-icon">🏆</div>
                             <div class="empty-state-text">당첨번호를 불러올 수 없습니다</div>
@@ -1555,12 +1552,11 @@
                     `;
                 }).join('');
 
-                content.innerHTML = `<h2 class="page-title">🏆 역대 당첨번호</h2>${cardsHtml}`;
+                content.innerHTML = cardsHtml;
 
             } catch (error) {
                 console.error('당첨번호 로드 오류:', error);
                 content.innerHTML = `
-                    <h2 class="page-title">🏆 역대 당첨번호</h2>
                     <div class="empty-state">
                         <div class="empty-state-icon">🏆</div>
                         <div class="empty-state-text">당첨번호를 불러올 수 없습니다</div>
