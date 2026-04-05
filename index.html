@@ -1550,15 +1550,14 @@
                 for (let i = 0; i < 10; i++) {
                     const round = latestRound - i;
                     try {
-                        // Vercel Serverless Function 사용
-                        // 로컬 테스트: http://localhost:3000/api/winning-numbers?round=${round}
-                        // 배포 후: /api/winning-numbers?round=${round}
-                        const apiUrl = `/api/winning-numbers?round=${round}`;
+                        // allorigins.win 프록시 사용 (더 안정적)
+                        const apiUrl = `https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`;
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
                         
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 8000);
+                        const timeoutId = setTimeout(() => controller.abort(), 10000);
                         
-                        const response = await fetch(apiUrl, { signal: controller.signal });
+                        const response = await fetch(proxyUrl, { signal: controller.signal });
                         clearTimeout(timeoutId);
                         
                         if (!response.ok) {
