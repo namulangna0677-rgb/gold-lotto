@@ -355,7 +355,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        .btn-group { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; }
         
         .save-btn {
             background: linear-gradient(135deg, #fbbf24, #d97706);
@@ -665,7 +665,7 @@
             display: flex;
             gap: 4px;
             flex-wrap: nowrap;
-            justify-content: flex-start;
+            justify-content: center;
             overflow-x: auto;
             flex-direction: row;
         }
@@ -1250,7 +1250,6 @@
 
             if (currentNumbers.length > 0) {
                 await saveNumbersToHistory(currentNumbers);
-                alert('💾 번호가 저장되었습니다!');
             }
         };
 
@@ -1551,14 +1550,20 @@
                 for (let i = 0; i < 10; i++) {
                     const round = latestRound - i;
                     try {
-                        const apiUrl = `https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`;
-                        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+                        // Vercel Serverless Function 사용
+                        // 로컬 테스트: http://localhost:3000/api/winning-numbers?round=${round}
+                        // 배포 후: /api/winning-numbers?round=${round}
+                        const apiUrl = `/api/winning-numbers?round=${round}`;
                         
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 5000);
+                        const timeoutId = setTimeout(() => controller.abort(), 8000);
                         
-                        const response = await fetch(proxyUrl, { signal: controller.signal });
+                        const response = await fetch(apiUrl, { signal: controller.signal });
                         clearTimeout(timeoutId);
+                        
+                        if (!response.ok) {
+                            throw new Error(`API 오류: ${response.status}`);
+                        }
                         
                         const data = await response.json();
                         
@@ -1588,7 +1593,7 @@
                         <div class="empty-state">
                             <div class="empty-state-icon">🏆</div>
                             <div class="empty-state-text">당첨번호를 불러올 수 없습니다</div>
-                            <div class="empty-state-subtext">Vercel 배포 후 서버리스 함수로 해결 예정</div>
+                            <div class="empty-state-subtext">잠시 후 다시 시도해주세요</div>
                         </div>
                     `;
                     return;
@@ -1629,7 +1634,7 @@
                     <div class="empty-state">
                         <div class="empty-state-icon">🏆</div>
                         <div class="empty-state-text">당첨번호를 불러올 수 없습니다</div>
-                        <div class="empty-state-subtext">Vercel 배포 후 정상 작동 예정</div>
+                        <div class="empty-state-subtext">잠시 후 다시 시도해주세요</div>
                     </div>
                 `;
             }
