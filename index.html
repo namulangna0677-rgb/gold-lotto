@@ -903,14 +903,12 @@
         <!-- 로그인 전 메뉴 -->
         <div id="menu-guest">
             <div class="menu-item" onclick="showAuthModal()">로그인</div>
-            <div class="menu-item" onclick="showWinningHistory()">역대 당첨번호</div>
         </div>
         
         <!-- 로그인 후 메뉴 -->
         <div id="menu-user" style="display: none;">
             <div class="user-email-menu" id="menuUserEmail" onclick="openAccountPage()"></div>
             <div class="menu-item" onclick="openMyNumbersPage()">내 번호 관리</div>
-            <div class="menu-item" onclick="showWinningHistory()">역대 당첨번호</div>
             <div class="menu-item" onclick="logoutUser()">로그아웃</div>
         </div>
     </div>
@@ -1004,17 +1002,6 @@
                 <div class="empty-state-text">저장된 번호가 없습니다</div>
                 <div class="empty-state-subtext">금화를 터치해서 번호를 뽑아보세요!</div>
             </div>
-        </div>
-    </div>
-
-    <!-- 역대 당첨번호 페이지 -->
-    <div id="winning-history-page" class="page-container">
-        <div class="page-header">
-            <div class="back-btn" onclick="closeWinningHistory()">←</div>
-            <h2 class="page-title">🏆 역대 당첨번호</h2>
-        </div>
-        <div class="page-content" id="winning-history-content">
-            <div class="loading-spinner">당첨번호를 불러오는 중...</div>
         </div>
     </div>
 
@@ -1414,22 +1401,6 @@
             }
         };
 
-        window.showWinningHistory = async () => {
-            document.getElementById('menuDropdown').classList.remove('show');
-            
-            const page = document.getElementById('winning-history-page');
-            page.style.display = 'block';
-            setTimeout(() => { page.classList.add('active'); }, 10);
-
-            await loadWinningNumbers();
-        };
-
-        window.closeWinningHistory = () => {
-            const page = document.getElementById('winning-history-page');
-            page.classList.remove('active');
-            setTimeout(() => { page.style.display = 'none'; }, 300);
-        };
-
         // 계정관리 페이지 열기
         window.openAccountPage = () => {
             document.getElementById('menuDropdown').classList.remove('show');
@@ -1531,80 +1502,6 @@
                 } else {
                     alert('계정 삭제에 실패했습니다. 다시 시도해주세요.');
                 }
-            }
-        };
-
-        window.loadWinningNumbers = async () => {
-            const content = document.getElementById('winning-history-content');
-            content.innerHTML = '<div class="loading-spinner">당첨번호를 불러오는 중...</div>';
-
-            try {
-                // 정적 데이터 사용 (수동 업데이트 필요)
-                // 매주 토요일 추첨 후 업데이트하세요!
-                const staticData = [
-                    { round: 1160, date: '2025-03-29', numbers: [3, 12, 15, 23, 28, 39], bonus: 16 },
-                    { round: 1159, date: '2025-03-22', numbers: [7, 14, 21, 28, 35, 42], bonus: 9 },
-                    { round: 1158, date: '2025-03-15', numbers: [2, 11, 19, 27, 33, 41], bonus: 5 },
-                    { round: 1157, date: '2025-03-08', numbers: [6, 13, 20, 26, 34, 40], bonus: 18 },
-                    { round: 1156, date: '2025-03-01', numbers: [1, 8, 17, 24, 31, 38], bonus: 22 },
-                    { round: 1155, date: '2025-02-22', numbers: [4, 10, 16, 25, 32, 43], bonus: 29 },
-                    { round: 1154, date: '2025-02-15', numbers: [5, 9, 18, 23, 30, 37], bonus: 12 },
-                    { round: 1153, date: '2025-02-08', numbers: [2, 14, 19, 27, 35, 44], bonus: 7 },
-                    { round: 1152, date: '2025-02-01', numbers: [3, 11, 20, 26, 33, 42], bonus: 15 },
-                    { round: 1151, date: '2025-01-25', numbers: [6, 13, 21, 28, 36, 41], bonus: 10 }
-                ];
-
-                const rounds = staticData;
-
-                if (rounds.length === 0) {
-                    content.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">🏆</div>
-                            <div class="empty-state-text">당첨번호를 불러올 수 없습니다</div>
-                            <div class="empty-state-subtext">잠시 후 다시 시도해주세요</div>
-                        </div>
-                    `;
-                    return;
-                }
-
-                const cardsHtml = rounds.map(item => {
-                    const numbersHtml = item.numbers.map(n => {
-                        let cIdx = Math.ceil(n / 10);
-                        if (cIdx > 5) cIdx = 5;
-                        return `<div class="card-ball c${cIdx}">${n}</div>`;
-                    }).join('');
-                    
-                    let bonusCIdx = Math.ceil(item.bonus / 10);
-                    if (bonusCIdx > 5) bonusCIdx = 5;
-
-                    return `
-                        <div class="winning-card">
-                            <div class="winning-header">
-                                <div class="round-info">
-                                    <div class="round-number">${item.round}회</div>
-                                    <div class="draw-date">${item.date}</div>
-                                </div>
-                            </div>
-                            <div class="winning-numbers">
-                                ${numbersHtml}
-                                <div style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.5); font-weight: 300; display: flex; align-items: center;">+</div>
-                                <div class="card-ball c${bonusCIdx}">${item.bonus}</div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                content.innerHTML = cardsHtml;
-
-            } catch (error) {
-                console.error('당첨번호 로드 오류:', error);
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🏆</div>
-                        <div class="empty-state-text">당첨번호를 불러올 수 없습니다</div>
-                        <div class="empty-state-subtext">잠시 후 다시 시도해주세요</div>
-                    </div>
-                `;
             }
         };
 
